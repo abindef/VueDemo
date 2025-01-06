@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import PersonalTasks from '../views/PersonalTasks.vue'
+import TeamTasks from '../views/TeamTasks.vue'
+import TaskOverview from '../views/TaskOverview.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +10,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: HomeView
     },
     {
       path: '/about',
@@ -17,7 +20,22 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
-  ],
+    {
+      path: '/personal',
+      name: 'personal',
+      component: PersonalTasks
+    },
+    {
+      path: '/team',
+      name: 'team',
+      component: TeamTasks
+    },
+    {
+      path: '/overview',
+      name: 'overview',
+      component: TaskOverview
+    }
+  ]
 })
 
 export default router

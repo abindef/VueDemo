@@ -1,72 +1,88 @@
+<!--
+  TodoList.vue
+  功能：Todo列表组件
+  职责：
+  1. 展示和管理待办事项列表
+  2. 提供添加、删除、切换完成状态的功能
+  3. 支持任务过滤
+-->
+
 <template>
   <div class="todo-list">
-    <!-- 输入框部分 -->
-    <div class="todo-input">
-      <input
-        v-model="newTodo"
-        @keyup.enter="handleAddTodo"
-        placeholder="添加新任务"
-        type="text"
-      />
-      <button @click="handleAddTodo">添加</button>
-    </div>
+    <!-- 主题切换 -->
+    <ThemeSwitch />
 
-    <!-- 过滤器部分 -->
-    <div class="todo-filters">
-      <button
-        v-for="filterType in filters"
-        :key="filterType"
-        :class="{ active: store.filter === filterType }"
-        @click="store.setFilter(filterType)"
-      >
-        {{ filterType }}
-      </button>
-    </div>
+    <!-- 任务输入区域 -->
+    <TaskInput
+      v-model="newTodo"
+      @add-task="handleAddTodo"
+    />
 
-    <!-- 列表部分 -->
-    <ul class="todo-items">
-      <li v-for="todo in store.filteredTodos" :key="todo.id" class="todo-item">
-        <input
-          type="checkbox"
-          :checked="todo.completed"
-          @change="store.toggleTodo(todo.id)"
-        />
-        <span :class="{ completed: todo.completed }">{{ todo.title }}</span>
-        <button @click="store.removeTodo(todo.id)" class="delete-btn">删除</button>
-      </li>
-    </ul>
+    <!-- 任务过滤器 -->
+    <TaskFilters
+      :current-filter="store.filter"
+      :filters="filters"
+      @filter-change="store.setFilter"
+    />
+
+    <!-- 任务列表 -->
+    <TaskList
+      :tasks="store.filteredTodos"
+      @toggle-task="store.toggleTodo"
+      @remove-task="store.removeTodo"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+// 导入依赖
+import { ref, defineProps } from 'vue'
 import { useTodoStore } from '@/stores/todo'
 import { TodoFilter } from '@/types/todo'
 
-// 获取store实例（类似于C#中的依赖注入）
-const store = useTodoStore()
+// 导入子组件
+import ThemeSwitch from './todo/ThemeSwitch.vue'
+import TaskInput from './todo/TaskInput.vue'
+import TaskFilters from './todo/TaskFilters.vue'
+import TaskList from './todo/TaskList.vue'
 
-// 本地状态（类似于C#中的私有字段）
+// Props 定义
+interface Props {
+  storeKey?: string
+}
+const props = defineProps<Props>()
+
+// Store 初始化
+const store = useTodoStore(props.storeKey || 'default')
+
+// 本地状态
 const newTodo = ref('')
 const filters = [TodoFilter.All, TodoFilter.Active, TodoFilter.Completed]
 
-// 方法（类似于C#中的事件处理器）
+// 事件处理
 const handleAddTodo = () => {
-  if (newTodo.value.trim()) {
-    store.addTodo(newTodo.value.trim())
+  const title = newTodo.value.trim()
+  if (title) {
+    store.addTodo(title)
     newTodo.value = ''
   }
 }
 </script>
 
 <style scoped>
+/* 布局样式 */
 .todo-list {
-  max-width: 600px;
+  max-width: 800px;
   margin: 20px auto;
   padding: 20px;
-  background: #fff;
+  background: var(--color-card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-switch {
+  text-align: right;
+  margin-bottom: 20px;
 }
 
 .todo-input {
@@ -78,8 +94,10 @@ const handleAddTodo = () => {
 .todo-input input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-input-border);
   border-radius: 4px;
+  background: var(--color-card-bg);
+  color: var(--color-text);
 }
 
 .todo-filters {
@@ -90,16 +108,17 @@ const handleAddTodo = () => {
 
 .todo-filters button {
   padding: 5px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-card-bg);
+  color: var(--color-text);
   cursor: pointer;
 }
 
 .todo-filters button.active {
-  background: #4CAF50;
+  background: var(--color-primary);
   color: white;
-  border-color: #4CAF50;
+  border-color: var(--color-primary);
 }
 
 .todo-items {
@@ -109,22 +128,62 @@ const handleAddTodo = () => {
 
 .todo-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+  padding: 15px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s;
 }
 
-.todo-item .completed {
+.todo-item:hover {
+  background-color: var(--color-hover-bg);
+}
+
+.todo-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.todo-title {
+  font-size: 1.1em;
+  color: var(--color-text);
+}
+
+.todo-details {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.todo-date {
+  color: var(--color-completed);
+  font-size: 0.9em;
+}
+
+.todo-status {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  background-color: var(--color-status-active);
+  color: var(--color-status-active-text);
+}
+
+.status-completed {
+  background-color: var(--color-status-completed);
+  color: var(--color-status-completed-text);
+}
+
+.completed {
   text-decoration: line-through;
-  color: #999;
+  color: var(--color-completed);
 }
 
 .delete-btn {
-  margin-left: auto;
   padding: 5px 10px;
   border: none;
-  background: #ff4444;
+  background: var(--color-danger);
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -132,14 +191,47 @@ const handleAddTodo = () => {
 
 button {
   padding: 8px 16px;
-  background: #4CAF50;
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: opacity 0.2s;
 }
 
 button:hover {
   opacity: 0.9;
+}
+</style>
+
+<style>
+:root {
+  --color-card-bg: #fff;
+  --color-input-border: #ddd;
+  --color-border: #ddd;
+  --color-text: #333;
+  --color-primary: #4CAF50;
+  --color-hover-bg: #f9f9f9;
+  --color-completed: #999;
+  --color-status-active: #e8f5e9;
+  --color-status-active-text: #2e7d32;
+  --color-status-completed: #eeeeee;
+  --color-status-completed-text: #757575;
+  --color-danger: #ff4444;
+}
+
+[data-theme="dark"] {
+  --color-card-bg: #333;
+  --color-input-border: #555;
+  --color-border: #555;
+  --color-text: #fff;
+  --color-primary: #4CAF50;
+  --color-hover-bg: #444;
+  --color-completed: #666;
+  --color-status-active: #2e7d32;
+  --color-status-active-text: #fff;
+  --color-status-completed: #757575;
+  --color-status-completed-text: #fff;
+  --color-danger: #ff4444;
 }
 </style>
