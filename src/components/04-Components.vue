@@ -180,7 +180,7 @@ provide('themeColor', themeColor)
 </script>
 
 <script>
-import { defineComponent } from 'vue'
+import { defineComponent, inject } from 'vue'
 
 const UserCard = defineComponent({
   name: 'UserCard',
@@ -262,7 +262,6 @@ const CustomInput = defineComponent({
 const GrandChild = defineComponent({
   name: 'GrandChild',
   setup() {
-    const { inject } = require('vue')
     const themeColor = inject('themeColor')
     
     return { themeColor }

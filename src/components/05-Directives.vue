@@ -294,22 +294,18 @@ const count = ref(0)
 
 const handleClick = () => {
   console.log('按钮被点击')
-  alert('按钮被点击')
 }
 
 const handleClickWithParam = (param) => {
   console.log('带参数点击:', param)
-  alert(`带参数点击: ${param}`)
 }
 
 const handleEnter = (e) => {
   console.log('按下 Enter:', e.target.value)
-  alert(`输入内容: ${e.target.value}`)
 }
 
 const handleEsc = () => {
   console.log('按下 Esc')
-  alert('按下 Esc')
 }
 
 const handleOuterClick = () => {
